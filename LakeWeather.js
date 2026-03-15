@@ -205,7 +205,7 @@ async function buildWidget() {
 
   // ── ALERT BORDER ─────────────────────────────────────────────
   const borderColors = { none: "#0f1b2d", yellow: "#d6c472", orange: "#d6944a", red: "#c85c4a" };
-  const borderWidth = s(6);
+  const borderWidth = s(12);
 
   // ── WIDGET ────────────────────────────────────────────────────
   const widget = new ListWidget();
@@ -216,7 +216,7 @@ async function buildWidget() {
   const content = widget.addStack();
   content.layoutVertically();
   content.backgroundColor = new Color("#0f1b2d");
-  content.cornerRadius = s(4);
+  content.cornerRadius = s(10);
   content.setPadding(s(10), s(14), s(6), s(14));
 
   // ── ROW 1: Temp (large, left) + Condition emoji + label (right) ──
