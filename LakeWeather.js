@@ -59,13 +59,13 @@ function moonEmoji(phase) {
 
 function moonPhaseName(phase) {
   if (phase < 0.0625) return "New Moon";
-  if (phase < 0.1875) return "Wax Crescent";
-  if (phase < 0.3125) return "1st Quarter";
-  if (phase < 0.4375) return "Wax Gibbous";
+  if (phase < 0.1875) return "Waxing Crescent";
+  if (phase < 0.3125) return "First Quarter";
+  if (phase < 0.4375) return "Waxing Gibbous";
   if (phase < 0.5625) return "Full Moon";
-  if (phase < 0.6875) return "Wan Gibbous";
+  if (phase < 0.6875) return "Waning Gibbous";
   if (phase < 0.8125) return "Last Quarter";
-  if (phase < 0.9375) return "Wan Crescent";
+  if (phase < 0.9375) return "Waning Crescent";
   return "New Moon";
 }
 
@@ -224,7 +224,6 @@ async function buildWidget() {
   moonStack.layoutVertically();
   moonStack.centerAlignContent();
   moonStack.spacing = 2;
-  moonStack.size = new Size(88, 0);
 
   const moonIconText = moonStack.addText(moonIcon);
   moonIconText.font = Font.systemFont(22);
@@ -235,7 +234,6 @@ async function buildWidget() {
   moonNameText.textColor = new Color("#c8dff0");
   moonNameText.centerAlignText();
   moonNameText.minimumScaleFactor = 0.7;
-  moonNameText.lineLimit = 1;
 
   bottomRow.addSpacer();
 
