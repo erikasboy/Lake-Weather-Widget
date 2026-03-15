@@ -201,7 +201,7 @@ async function buildWidget() {
   arrowText.textColor = new Color("#7ec8e3");
 
   const windLabel = windRow.addText(windCompass + "  " + windKnots + " kn");
-  windLabel.font = Font.semiboldMonospacedSystemFont(16);
+  windLabel.font = Font.semiboldMonospacedSystemFont(14);
   windLabel.textColor = new Color("#e8f4f8");
   windLabel.lineLimit = 1;
 
@@ -224,6 +224,7 @@ async function buildWidget() {
   moonStack.layoutVertically();
   moonStack.centerAlignContent();
   moonStack.spacing = 2;
+  moonStack.size = new Size(88, 0);
 
   const moonIconText = moonStack.addText(moonIcon);
   moonIconText.font = Font.systemFont(22);
@@ -234,6 +235,7 @@ async function buildWidget() {
   moonNameText.textColor = new Color("#c8dff0");
   moonNameText.centerAlignText();
   moonNameText.minimumScaleFactor = 0.7;
+  moonNameText.lineLimit = 1;
 
   bottomRow.addSpacer();
 
