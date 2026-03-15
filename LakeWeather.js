@@ -188,7 +188,7 @@ async function buildWidget() {
   const s = n => Math.round(n * Device.screenSize().width / 375);
 
   // ── ALERT BACKGROUND ─────────────────────────────────────────
-  const bgColors = { none: "#0f1b2d", yellow: "#2d2a12", orange: "#2d1e0e", red: "#2d1212" };
+  const bgColors = { none: "#0f1b2d", yellow: "#d6c472", orange: "#d6944a", red: "#c85c4a" };
 
   // ── WIDGET ────────────────────────────────────────────────────
   const widget = new ListWidget();
