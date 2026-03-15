@@ -203,17 +203,24 @@ async function buildWidget() {
   // ── SCALE: baseline tuned for iPhone SE 2 (375pt wide) ──────────
   const s = n => Math.round(n * Device.screenSize().width / 375);
 
-  // ── ALERT BACKGROUND ─────────────────────────────────────────
-  const bgColors = { none: "#0f1b2d", yellow: "#d6c472", orange: "#d6944a", red: "#c85c4a" };
+  // ── ALERT BORDER ─────────────────────────────────────────────
+  const borderColors = { none: "#0f1b2d", yellow: "#d6c472", orange: "#d6944a", red: "#c85c4a" };
+  const borderWidth = s(6);
 
   // ── WIDGET ────────────────────────────────────────────────────
   const widget = new ListWidget();
-  widget.backgroundColor = new Color(bgColors[alertInfo.level] || bgColors.none);
-  widget.setPadding(s(10), s(14), s(6), s(14));
+  widget.backgroundColor = new Color(borderColors[alertInfo.level] || borderColors.none);
+  widget.setPadding(borderWidth, borderWidth, borderWidth, borderWidth);
   if (alertInfo.url) { widget.url = alertInfo.url; }
 
+  const content = widget.addStack();
+  content.layoutVertically();
+  content.backgroundColor = new Color("#0f1b2d");
+  content.cornerRadius = s(4);
+  content.setPadding(s(10), s(14), s(6), s(14));
+
   // ── ROW 1: Temp (large, left) + Condition emoji + label (right) ──
-  const topRow = widget.addStack();
+  const topRow = content.addStack();
   topRow.layoutHorizontally();
   topRow.bottomAlignContent();
 
@@ -245,11 +252,11 @@ async function buildWidget() {
   condLabel.rightAlignText();
   condLabel.minimumScaleFactor = 0.7;
 
-  widget.addSpacer(s(2));
+  content.addSpacer(s(2));
 
   // ── ROW 2: Wind ──
   const windStyle = getWindStyle(parseFloat(windKnots));
-  const windRow = widget.addStack();
+  const windRow = content.addStack();
   windRow.layoutHorizontally();
   windRow.centerAlignContent();
   windRow.spacing = s(5);
@@ -269,17 +276,17 @@ async function buildWidget() {
   windLabel.textColor = new Color(windStyle.color);
   windLabel.lineLimit = 1;
 
-  widget.addSpacer(s(4));
+  content.addSpacer(s(4));
 
   // ── DIVIDER ──
-  const divStack = widget.addStack();
+  const divStack = content.addStack();
   divStack.backgroundColor = new Color("#1e3a5f");
   divStack.size = new Size(0, 1);
 
-  widget.addSpacer(s(4));
+  content.addSpacer(s(4));
 
   // ── ROW 3: Moon (left) + Sun times (right) ──
-  const bottomRow = widget.addStack();
+  const bottomRow = content.addStack();
   bottomRow.layoutHorizontally();
   bottomRow.centerAlignContent();
 
