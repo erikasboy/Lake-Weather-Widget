@@ -2,7 +2,20 @@
 // Medium widget: Temp, Condition, Wind (knots + direction arrow), Moon, Sunrise/Sunset
 // Data: Open-Meteo (weather), WeatherAPI.com (alerts)
 
-const WEATHERAPI_KEY = "5c3225a9f1594fa0aee233951251303";
+// ── API KEY SETUP ────────────────────────────────────────────────
+// Run this script once inside the Scriptable app to be prompted for
+// your WeatherAPI.com key. It is stored in the iOS Keychain and
+// never needs to be pasted into this file.
+let WEATHERAPI_KEY = "";
+if (Keychain.contains("lakeweather_weatherapi_key")) {
+  WEATHERAPI_KEY = Keychain.get("lakeweather_weatherapi_key");
+} else if (!config.runsInWidget) {
+  const key = await input("WeatherAPI Key", "Paste your WeatherAPI.com key", "");
+  if (key) {
+    Keychain.set("lakeweather_weatherapi_key", key);
+    WEATHERAPI_KEY = key;
+  }
+}
 
 // ── HELPERS: WIND ───────────────────────────────────────────────
 function kmhToKnots(kmh) {
