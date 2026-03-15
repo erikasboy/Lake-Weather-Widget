@@ -233,6 +233,7 @@ async function buildWidget() {
   moonNameText.font = Font.semiboldSystemFont(10);
   moonNameText.textColor = new Color("#c8dff0");
   moonNameText.centerAlignText();
+  moonNameText.minimumScaleFactor = 0.7;
 
   bottomRow.addSpacer();
 
