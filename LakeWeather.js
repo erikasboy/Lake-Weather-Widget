@@ -1,6 +1,8 @@
 // LakeWeather Widget for Scriptable
 // Medium widget: Temp, Condition, Wind (knots + direction arrow), Moon, Sunrise/Sunset
-// Data: Open-Meteo (no API key needed), calculations for moon/sun
+// Data: Open-Meteo (weather), WeatherAPI.com (alerts)
+
+const WEATHERAPI_KEY = "5c3225a9f1594fa0aee233951251303";
 
 // ── HELPERS: WIND ───────────────────────────────────────────────
 function kmhToKnots(kmh) {
@@ -129,6 +131,29 @@ async function fetchWeather(lat, lon) {
   return json.current;
 }
 
+// ── FETCH ALERTS ─────────────────────────────────────────────────
+async function fetchAlerts(lat, lon, apiKey) {
+  try {
+    const url = "https://api.weatherapi.com/v1/forecast.json?key=" + apiKey + "&q=" + lat + "," + lon + "&days=1&alerts=yes";
+    const req = new Request(url);
+    const json = await req.loadJSON();
+    const alerts = json.alerts && json.alerts.alert;
+    if (!alerts || alerts.length === 0) return { level: "none", url: null };
+    const rank = { "none": 0, "yellow": 1, "orange": 2, "red": 3 };
+    const severityMap = { "Minor": "yellow", "Moderate": "orange", "Severe": "red", "Extreme": "red" };
+    let worst = { level: "none", url: null };
+    for (const alert of alerts) {
+      const level = severityMap[alert.severity] || "none";
+      if (rank[level] > rank[worst.level]) {
+        worst = { level, url: alert.url || null };
+      }
+    }
+    return worst;
+  } catch (e) {
+    return { level: "none", url: null };
+  }
+}
+
 // ── BUILD WIDGET ─────────────────────────────────────────────────
 async function buildWidget() {
   Location.setAccuracyToHundredMeters();
@@ -143,6 +168,7 @@ async function buildWidget() {
   const lon = loc.longitude;
 
   const weather = await fetchWeather(lat, lon);
+  const alertInfo = await fetchAlerts(lat, lon, WEATHERAPI_KEY);
   const tempC = Math.round(weather.temperature_2m);
   const windKnots = kmhToKnots(weather.wind_speed_10m);
   const windCompass = degreesToCompass(weather.wind_direction_10m);
@@ -159,10 +185,14 @@ async function buildWidget() {
   // ── SCALE: baseline tuned for iPhone SE 2 (375pt wide) ──────────
   const s = n => Math.round(n * Device.screenSize().width / 375);
 
+  // ── ALERT BACKGROUND ─────────────────────────────────────────
+  const bgColors = { none: "#0f1b2d", yellow: "#2d2a12", orange: "#2d1e0e", red: "#2d1212" };
+
   // ── WIDGET ────────────────────────────────────────────────────
   const widget = new ListWidget();
-  widget.backgroundColor = new Color("#0f1b2d");
+  widget.backgroundColor = new Color(bgColors[alertInfo.level] || bgColors.none);
   widget.setPadding(s(10), s(14), s(6), s(14));
+  if (alertInfo.url) { widget.url = alertInfo.url; }
 
   // ── ROW 1: Temp (large, left) + Condition emoji + label (right) ──
   const topRow = widget.addStack();
