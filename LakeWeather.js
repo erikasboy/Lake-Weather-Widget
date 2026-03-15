@@ -167,7 +167,7 @@ async function buildWidget() {
   topRow.bottomAlignContent();
 
   const tempText = topRow.addText(tempC + "°");
-  tempText.font = Font.boldSystemFont(52);
+  tempText.font = Font.boldSystemFont(60);
   tempText.textColor = new Color("#e8f4f8");
   tempText.minimumScaleFactor = 0.8;
 
@@ -177,13 +177,13 @@ async function buildWidget() {
   condStack.layoutVertically();
 
   const condEmojiText = condStack.addText(condEmoji);
-  condEmojiText.font = Font.systemFont(26);
+  condEmojiText.font = Font.systemFont(32);
   condEmojiText.rightAlignText();
 
   condStack.addSpacer(2);
 
   const condLabel = condStack.addText(condition);
-  condLabel.font = Font.mediumSystemFont(11);
+  condLabel.font = Font.mediumSystemFont(13);
   condLabel.textColor = new Color("#7ec8e3");
   condLabel.rightAlignText();
   condLabel.minimumScaleFactor = 0.7;
@@ -218,26 +218,21 @@ async function buildWidget() {
   bottomRow.layoutHorizontally();
   bottomRow.centerAlignContent();
 
-  // Moon
+  // Moon: emoji on top, phase name below
   const moonStack = bottomRow.addStack();
-  moonStack.layoutHorizontally();
+  moonStack.layoutVertically();
   moonStack.centerAlignContent();
-  moonStack.spacing = 6;
+  moonStack.spacing = 2;
 
   const moonIconText = moonStack.addText(moonIcon);
-  moonIconText.font = Font.systemFont(24);
+  moonIconText.font = Font.systemFont(26);
+  moonIconText.centerAlignText();
 
-  const moonLabelStack = moonStack.addStack();
-  moonLabelStack.layoutVertically();
-
-  const moonTitle = moonLabelStack.addText("Moon");
-  moonTitle.font = Font.regularMonospacedSystemFont(9);
-  moonTitle.textColor = new Color("#4a8db7");
-
-  const moonNameText = moonLabelStack.addText(moonName);
-  moonNameText.font = Font.semiboldSystemFont(11);
+  const moonNameText = moonStack.addText(moonName);
+  moonNameText.font = Font.semiboldSystemFont(10);
   moonNameText.textColor = new Color("#c8dff0");
-  moonNameText.minimumScaleFactor = 0.75;
+  moonNameText.centerAlignText();
+  moonNameText.minimumScaleFactor = 0.7;
 
   bottomRow.addSpacer();
 
