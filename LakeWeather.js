@@ -217,7 +217,7 @@ async function buildWidget() {
   content.layoutVertically();
   content.backgroundColor = new Color("#0f1b2d");
   content.cornerRadius = s(16);
-  content.setPadding(s(2), s(2), s(8), s(2));
+  content.setPadding(s(4), s(4), s(4), s(4));
 
   // ── ROW 1: Temp (large, left) + Condition emoji + label (right) ──
   const topRow = content.addStack();
