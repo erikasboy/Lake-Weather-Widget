@@ -188,7 +188,7 @@ async function buildWidget() {
   condLabel.rightAlignText();
   condLabel.minimumScaleFactor = 0.7;
 
-  widget.addSpacer(3);
+  widget.addSpacer(2);
 
   // ── ROW 2: Wind ──
   const windRow = widget.addStack();
@@ -204,14 +204,14 @@ async function buildWidget() {
   windLabel.font = Font.semiboldMonospacedSystemFont(18);
   windLabel.textColor = new Color("#e8f4f8");
 
-  widget.addSpacer(6);
+  widget.addSpacer(4);
 
   // ── DIVIDER ──
   const divStack = widget.addStack();
   divStack.backgroundColor = new Color("#1e3a5f");
   divStack.size = new Size(0, 1);
 
-  widget.addSpacer(6);
+  widget.addSpacer(4);
 
   // ── ROW 3: Moon (left) + Sun times (right) ──
   const bottomRow = widget.addStack();
@@ -234,7 +234,7 @@ async function buildWidget() {
   moonNameText.centerAlignText();
   moonNameText.minimumScaleFactor = 0.7;
 
-  bottomRow.addSpacer(12);
+  bottomRow.addSpacer();
 
   // Sun times
   const sunStack = bottomRow.addStack();
