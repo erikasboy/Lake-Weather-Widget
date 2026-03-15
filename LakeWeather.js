@@ -225,18 +225,14 @@ async function buildWidget() {
   moonStack.centerAlignContent();
   moonStack.spacing = 2;
 
-  const moonEmojiRow = moonStack.addStack();
-  moonEmojiRow.layoutHorizontally();
-  moonEmojiRow.addSpacer();
-  const moonIconText = moonEmojiRow.addText(moonIcon);
+  const moonIconText = moonStack.addText(moonIcon);
   moonIconText.font = Font.systemFont(22);
-  moonEmojiRow.addSpacer();
+  moonIconText.centerAlignText();
 
   const moonNameText = moonStack.addText(moonName);
   moonNameText.font = Font.semiboldSystemFont(10);
   moonNameText.textColor = new Color("#c8dff0");
   moonNameText.centerAlignText();
-  moonNameText.minimumScaleFactor = 0.7;
 
   bottomRow.addSpacer();
 
