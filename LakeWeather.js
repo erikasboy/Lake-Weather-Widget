@@ -225,9 +225,12 @@ async function buildWidget() {
   moonStack.centerAlignContent();
   moonStack.spacing = 2;
 
-  const moonIconText = moonStack.addText(moonIcon);
+  const moonEmojiRow = moonStack.addStack();
+  moonEmojiRow.layoutHorizontally();
+  moonEmojiRow.addSpacer();
+  const moonIconText = moonEmojiRow.addText(moonIcon);
   moonIconText.font = Font.systemFont(22);
-  moonIconText.centerAlignText();
+  moonEmojiRow.addSpacer();
 
   const moonNameText = moonStack.addText(moonName);
   moonNameText.font = Font.semiboldSystemFont(10);
