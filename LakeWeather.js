@@ -124,6 +124,14 @@ function weatherEmoji(code) {
 }
 
 // ── HELPERS: TEMPERATURE COLOUR ──────────────────────────────────
+function getWindStyle(knots) {
+  if (knots >= 25) return { color: "#e8f4f8", bg: "#c43921" };
+  if (knots >= 20) return { color: "#c43921", bg: null };
+  if (knots >= 15) return { color: "#c46c21", bg: null };
+  if (knots >= 10) return { color: "#c4a021", bg: null };
+  return { color: "#e8f4f8", bg: null };
+}
+
 function getTempStyle(temp) {
   if (temp >= 40 || temp <= -30) return { color: "#e8f4f8", bg: "#c43921" };
   if (temp >= 35 || temp <= -25) return { color: "#c43921", bg: null };
@@ -179,7 +187,7 @@ async function buildWidget() {
   const weather = await fetchWeather(lat, lon);
   const alertInfo = await fetchAlerts(lat, lon, WEATHERAPI_KEY);
   const tempC = Math.round(weather.temperature_2m);
-  const tempStyle = getTempStyle(42); // TEMP TEST — remove before merging
+  const tempStyle = getTempStyle(tempC);
   const windKnots = kmhToKnots(weather.wind_speed_10m);
   const windCompass = degreesToCompass(weather.wind_direction_10m);
   const windArrow = compassToArrow(weather.wind_direction_10m);
@@ -240,6 +248,7 @@ async function buildWidget() {
   widget.addSpacer(s(2));
 
   // ── ROW 2: Wind ──
+  const windStyle = getWindStyle(parseFloat(windKnots));
   const windRow = widget.addStack();
   windRow.layoutHorizontally();
   windRow.centerAlignContent();
@@ -247,11 +256,17 @@ async function buildWidget() {
 
   const arrowText = windRow.addText(windArrow);
   arrowText.font = Font.boldSystemFont(s(20));
-  arrowText.textColor = new Color("#7ec8e3");
+  arrowText.textColor = new Color(windStyle.color);
 
-  const windLabel = windRow.addText(windCompass + "  " + windKnots + " kn");
+  const windLabelContainer = windRow.addStack();
+  if (windStyle.bg) {
+    windLabelContainer.backgroundColor = new Color(windStyle.bg);
+    windLabelContainer.cornerRadius = s(4);
+    windLabelContainer.setPadding(s(1), s(4), s(1), s(4));
+  }
+  const windLabel = windLabelContainer.addText(windCompass + "  " + windKnots + " kn");
   windLabel.font = Font.semiboldMonospacedSystemFont(s(14));
-  windLabel.textColor = new Color("#e8f4f8");
+  windLabel.textColor = new Color(windStyle.color);
   windLabel.lineLimit = 1;
 
   widget.addSpacer(s(4));
