@@ -59,13 +59,13 @@ function moonEmoji(phase) {
 
 function moonPhaseName(phase) {
   if (phase < 0.0625) return "New Moon";
-  if (phase < 0.1875) return "Waxing Crescent";
-  if (phase < 0.3125) return "First Quarter";
-  if (phase < 0.4375) return "Waxing Gibbous";
+  if (phase < 0.1875) return "Wax Crescent";
+  if (phase < 0.3125) return "1st Quarter";
+  if (phase < 0.4375) return "Wax Gibbous";
   if (phase < 0.5625) return "Full Moon";
-  if (phase < 0.6875) return "Waning Gibbous";
+  if (phase < 0.6875) return "Wan Gibbous";
   if (phase < 0.8125) return "Last Quarter";
-  if (phase < 0.9375) return "Waning Crescent";
+  if (phase < 0.9375) return "Wan Crescent";
   return "New Moon";
 }
 
@@ -197,11 +197,11 @@ async function buildWidget() {
   windRow.spacing = 5;
 
   const arrowText = windRow.addText(windArrow);
-  arrowText.font = Font.boldSystemFont(22);
+  arrowText.font = Font.boldSystemFont(20);
   arrowText.textColor = new Color("#7ec8e3");
 
   const windLabel = windRow.addText(windCompass + "  " + windKnots + " kn");
-  windLabel.font = Font.semiboldMonospacedSystemFont(18);
+  windLabel.font = Font.semiboldMonospacedSystemFont(16);
   windLabel.textColor = new Color("#e8f4f8");
 
   widget.addSpacer(4);
@@ -248,8 +248,9 @@ async function buildWidget() {
   const srIcon = srRow.addText("🌅");
   srIcon.font = Font.systemFont(13);
   const srText = srRow.addText(sun.sunrise);
-  srText.font = Font.semiboldMonospacedSystemFont(13);
+  srText.font = Font.semiboldMonospacedSystemFont(12);
   srText.textColor = new Color("#e8c66d");
+  srText.minimumScaleFactor = 0.8;
 
   const ssRow = sunStack.addStack();
   ssRow.layoutHorizontally();
@@ -258,8 +259,9 @@ async function buildWidget() {
   const ssIcon = ssRow.addText("🌇");
   ssIcon.font = Font.systemFont(13);
   const ssText = ssRow.addText(sun.sunset);
-  ssText.font = Font.semiboldMonospacedSystemFont(13);
+  ssText.font = Font.semiboldMonospacedSystemFont(12);
   ssText.textColor = new Color("#e8a54a");
+  ssText.minimumScaleFactor = 0.8;
 
   // Refresh every 15 min
   const nextRefresh = new Date();
