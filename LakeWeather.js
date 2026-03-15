@@ -167,7 +167,7 @@ async function buildWidget() {
   topRow.bottomAlignContent();
 
   const tempText = topRow.addText(tempC + "°");
-  tempText.font = Font.boldSystemFont(60);
+  tempText.font = Font.boldSystemFont(54);
   tempText.textColor = new Color("#e8f4f8");
   tempText.minimumScaleFactor = 0.8;
 
@@ -188,7 +188,7 @@ async function buildWidget() {
   condLabel.rightAlignText();
   condLabel.minimumScaleFactor = 0.7;
 
-  widget.addSpacer(3);
+  widget.addSpacer(2);
 
   // ── ROW 2: Wind ──
   const windRow = widget.addStack();
@@ -197,21 +197,22 @@ async function buildWidget() {
   windRow.spacing = 5;
 
   const arrowText = windRow.addText(windArrow);
-  arrowText.font = Font.boldSystemFont(22);
+  arrowText.font = Font.boldSystemFont(20);
   arrowText.textColor = new Color("#7ec8e3");
 
   const windLabel = windRow.addText(windCompass + "  " + windKnots + " kn");
-  windLabel.font = Font.semiboldMonospacedSystemFont(18);
+  windLabel.font = Font.semiboldMonospacedSystemFont(14);
   windLabel.textColor = new Color("#e8f4f8");
+  windLabel.lineLimit = 1;
 
-  widget.addSpacer(6);
+  widget.addSpacer(4);
 
   // ── DIVIDER ──
   const divStack = widget.addStack();
   divStack.backgroundColor = new Color("#1e3a5f");
   divStack.size = new Size(0, 1);
 
-  widget.addSpacer(6);
+  widget.addSpacer(4);
 
   // ── ROW 3: Moon (left) + Sun times (right) ──
   const bottomRow = widget.addStack();
@@ -234,7 +235,7 @@ async function buildWidget() {
   moonNameText.centerAlignText();
   moonNameText.minimumScaleFactor = 0.7;
 
-  bottomRow.addSpacer(12);
+  bottomRow.addSpacer();
 
   // Sun times
   const sunStack = bottomRow.addStack();
@@ -248,8 +249,9 @@ async function buildWidget() {
   const srIcon = srRow.addText("🌅");
   srIcon.font = Font.systemFont(13);
   const srText = srRow.addText(sun.sunrise);
-  srText.font = Font.semiboldMonospacedSystemFont(13);
+  srText.font = Font.semiboldMonospacedSystemFont(12);
   srText.textColor = new Color("#e8c66d");
+  srText.minimumScaleFactor = 0.8;
 
   const ssRow = sunStack.addStack();
   ssRow.layoutHorizontally();
@@ -258,8 +260,9 @@ async function buildWidget() {
   const ssIcon = ssRow.addText("🌇");
   ssIcon.font = Font.systemFont(13);
   const ssText = ssRow.addText(sun.sunset);
-  ssText.font = Font.semiboldMonospacedSystemFont(13);
+  ssText.font = Font.semiboldMonospacedSystemFont(12);
   ssText.textColor = new Color("#e8a54a");
+  ssText.minimumScaleFactor = 0.8;
 
   // Refresh every 15 min
   const nextRefresh = new Date();
