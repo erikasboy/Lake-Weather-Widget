@@ -123,6 +123,15 @@ function weatherEmoji(code) {
   return "⛈";
 }
 
+// ── HELPERS: TEMPERATURE COLOUR ──────────────────────────────────
+function getTempStyle(temp) {
+  if (temp >= 40 || temp <= -30) return { color: "#e8f4f8", bg: "#c85c4a" };
+  if (temp >= 35 || temp <= -25) return { color: "#c85c4a", bg: null };
+  if (temp >= 30 || temp <= -20) return { color: "#d6944a", bg: null };
+  if (temp >= 25 || temp <= -15) return { color: "#d6c472", bg: null };
+  return { color: "#e8f4f8", bg: null };
+}
+
 // ── FETCH WEATHER ────────────────────────────────────────────────
 async function fetchWeather(lat, lon) {
   const url = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon + "&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh&temperature_unit=celsius&timezone=auto";
@@ -169,9 +178,8 @@ async function buildWidget() {
 
   const weather = await fetchWeather(lat, lon);
   const alertInfo = await fetchAlerts(lat, lon, WEATHERAPI_KEY);
-  // TEMP TEST — remove before merging
-  alertInfo.level = "yellow";
   const tempC = Math.round(weather.temperature_2m);
+  const tempStyle = getTempStyle(tempC);
   const windKnots = kmhToKnots(weather.wind_speed_10m);
   const windCompass = degreesToCompass(weather.wind_direction_10m);
   const windArrow = compassToArrow(weather.wind_direction_10m);
@@ -201,9 +209,15 @@ async function buildWidget() {
   topRow.layoutHorizontally();
   topRow.bottomAlignContent();
 
-  const tempText = topRow.addText(tempC + "°");
+  const tempContainer = topRow.addStack();
+  if (tempStyle.bg) {
+    tempContainer.backgroundColor = new Color(tempStyle.bg);
+    tempContainer.cornerRadius = s(6);
+    tempContainer.setPadding(s(2), s(4), s(2), s(4));
+  }
+  const tempText = tempContainer.addText(tempC + "°");
   tempText.font = Font.boldSystemFont(s(54));
-  tempText.textColor = new Color("#e8f4f8");
+  tempText.textColor = new Color(tempStyle.color);
   tempText.minimumScaleFactor = 0.8;
 
   topRow.addSpacer();
