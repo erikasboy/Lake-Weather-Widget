@@ -125,10 +125,10 @@ function weatherEmoji(code) {
 
 // ── HELPERS: TEMPERATURE COLOUR ──────────────────────────────────
 function getTempStyle(temp) {
-  if (temp >= 40 || temp <= -30) return { color: "#e8f4f8", bg: "#c85c4a" };
-  if (temp >= 35 || temp <= -25) return { color: "#c85c4a", bg: null };
-  if (temp >= 30 || temp <= -20) return { color: "#d6944a", bg: null };
-  if (temp >= 25 || temp <= -15) return { color: "#d6c472", bg: null };
+  if (temp >= 40 || temp <= -30) return { color: "#e8f4f8", bg: "#c43921" };
+  if (temp >= 35 || temp <= -25) return { color: "#c43921", bg: null };
+  if (temp >= 30 || temp <= -20) return { color: "#c46c21", bg: null };
+  if (temp >= 25 || temp <= -15) return { color: "#c4a021", bg: null };
   return { color: "#e8f4f8", bg: null };
 }
 
@@ -179,7 +179,7 @@ async function buildWidget() {
   const weather = await fetchWeather(lat, lon);
   const alertInfo = await fetchAlerts(lat, lon, WEATHERAPI_KEY);
   const tempC = Math.round(weather.temperature_2m);
-  const tempStyle = getTempStyle(tempC);
+  const tempStyle = getTempStyle(42); // TEMP TEST — remove before merging
   const windKnots = kmhToKnots(weather.wind_speed_10m);
   const windCompass = degreesToCompass(weather.wind_direction_10m);
   const windArrow = compassToArrow(weather.wind_direction_10m);
