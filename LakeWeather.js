@@ -169,6 +169,8 @@ async function buildWidget() {
 
   const weather = await fetchWeather(lat, lon);
   const alertInfo = await fetchAlerts(lat, lon, WEATHERAPI_KEY);
+  // TEMP TEST — remove before merging
+  alertInfo.level = "yellow";
   const tempC = Math.round(weather.temperature_2m);
   const windKnots = kmhToKnots(weather.wind_speed_10m);
   const windCompass = degreesToCompass(weather.wind_direction_10m);
