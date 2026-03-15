@@ -1,6 +1,8 @@
 // LakeWeather Widget for Scriptable
 // Medium widget: Temp, Condition, Wind (knots + direction arrow), Moon, Sunrise/Sunset
-// Data: Open-Meteo (no API key needed), calculations for moon/sun
+// Data: Open-Meteo (weather), WeatherAPI.com (alerts)
+
+const WEATHERAPI_KEY = "5c3225a9f1594fa0aee233951251303";
 
 // ── HELPERS: WIND ───────────────────────────────────────────────
 function kmhToKnots(kmh) {
@@ -121,12 +123,52 @@ function weatherEmoji(code) {
   return "⛈";
 }
 
+// ── HELPERS: TEMPERATURE COLOUR ──────────────────────────────────
+function getWindStyle(knots) {
+  if (knots >= 25) return { color: "#e8f4f8", bg: "#c43921" };
+  if (knots >= 20) return { color: "#c43921", bg: null };
+  if (knots >= 15) return { color: "#c46c21", bg: null };
+  if (knots >= 10) return { color: "#c4a021", bg: null };
+  return { color: "#e8f4f8", bg: null };
+}
+
+function getTempStyle(temp) {
+  if (temp >= 40 || temp <= -30) return { color: "#e8f4f8", bg: "#c43921" };
+  if (temp >= 35 || temp <= -25) return { color: "#c43921", bg: null };
+  if (temp >= 30 || temp <= -20) return { color: "#c46c21", bg: null };
+  if (temp >= 25 || temp <= -15) return { color: "#c4a021", bg: null };
+  return { color: "#e8f4f8", bg: null };
+}
+
 // ── FETCH WEATHER ────────────────────────────────────────────────
 async function fetchWeather(lat, lon) {
   const url = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon + "&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh&temperature_unit=celsius&timezone=auto";
   const req = new Request(url);
   const json = await req.loadJSON();
   return json.current;
+}
+
+// ── FETCH ALERTS ─────────────────────────────────────────────────
+async function fetchAlerts(lat, lon, apiKey) {
+  try {
+    const url = "https://api.weatherapi.com/v1/forecast.json?key=" + apiKey + "&q=" + lat + "," + lon + "&days=1&alerts=yes";
+    const req = new Request(url);
+    const json = await req.loadJSON();
+    const alerts = json.alerts && json.alerts.alert;
+    if (!alerts || alerts.length === 0) return { level: "none", url: null };
+    const rank = { "none": 0, "yellow": 1, "orange": 2, "red": 3 };
+    const severityMap = { "Minor": "yellow", "Moderate": "orange", "Severe": "red", "Extreme": "red" };
+    let worst = { level: "none", url: null };
+    for (const alert of alerts) {
+      const level = severityMap[alert.severity] || "none";
+      if (rank[level] > rank[worst.level]) {
+        worst = { level, url: alert.url || null };
+      }
+    }
+    return worst;
+  } catch (e) {
+    return { level: "none", url: null };
+  }
 }
 
 // ── BUILD WIDGET ─────────────────────────────────────────────────
@@ -143,7 +185,9 @@ async function buildWidget() {
   const lon = loc.longitude;
 
   const weather = await fetchWeather(lat, lon);
+  const alertInfo = await fetchAlerts(lat, lon, WEATHERAPI_KEY);
   const tempC = Math.round(weather.temperature_2m);
+  const tempStyle = getTempStyle(tempC);
   const windKnots = kmhToKnots(weather.wind_speed_10m);
   const windCompass = degreesToCompass(weather.wind_direction_10m);
   const windArrow = compassToArrow(weather.wind_direction_10m);
@@ -156,19 +200,39 @@ async function buildWidget() {
   const moonName = moonPhaseName(phase);
   const sun = getSunTimes(now, lat, lon);
 
+  // ── SCALE: baseline tuned for iPhone SE 2 (375pt wide) ──────────
+  const s = n => Math.round(n * Device.screenSize().width / 375);
+
+  // ── ALERT BORDER ─────────────────────────────────────────────
+  const borderColors = { none: "#0f1b2d", yellow: "#d6c472", orange: "#d6944a", red: "#c85c4a" };
+  const borderWidth = s(12);
+
   // ── WIDGET ────────────────────────────────────────────────────
   const widget = new ListWidget();
-  widget.backgroundColor = new Color("#0f1b2d");
-  widget.setPadding(10, 14, 6, 14);
+  widget.backgroundColor = new Color(borderColors[alertInfo.level] || borderColors.none);
+  widget.setPadding(borderWidth, borderWidth, borderWidth, borderWidth);
+  if (alertInfo.url) { widget.url = alertInfo.url; }
+
+  const content = widget.addStack();
+  content.layoutVertically();
+  content.backgroundColor = new Color("#0f1b2d");
+  content.cornerRadius = s(16);
+  content.setPadding(s(4), s(4), s(4), s(4));
 
   // ── ROW 1: Temp (large, left) + Condition emoji + label (right) ──
-  const topRow = widget.addStack();
+  const topRow = content.addStack();
   topRow.layoutHorizontally();
   topRow.bottomAlignContent();
 
-  const tempText = topRow.addText(tempC + "°");
-  tempText.font = Font.boldSystemFont(54);
-  tempText.textColor = new Color("#e8f4f8");
+  const tempContainer = topRow.addStack();
+  if (tempStyle.bg) {
+    tempContainer.backgroundColor = new Color(tempStyle.bg);
+    tempContainer.cornerRadius = s(6);
+    tempContainer.setPadding(s(2), s(4), s(2), s(4));
+  }
+  const tempText = tempContainer.addText(tempC + "°");
+  tempText.font = Font.boldSystemFont(s(54));
+  tempText.textColor = new Color(tempStyle.color);
   tempText.minimumScaleFactor = 0.8;
 
   topRow.addSpacer();
@@ -177,45 +241,52 @@ async function buildWidget() {
   condStack.layoutVertically();
 
   const condEmojiText = condStack.addText(condEmoji);
-  condEmojiText.font = Font.systemFont(32);
+  condEmojiText.font = Font.systemFont(s(32));
   condEmojiText.rightAlignText();
 
-  condStack.addSpacer(2);
+  condStack.addSpacer(s(2));
 
   const condLabel = condStack.addText(condition);
-  condLabel.font = Font.mediumSystemFont(13);
+  condLabel.font = Font.mediumSystemFont(s(13));
   condLabel.textColor = new Color("#7ec8e3");
   condLabel.rightAlignText();
   condLabel.minimumScaleFactor = 0.7;
 
-  widget.addSpacer(2);
+  content.addSpacer(s(2));
 
   // ── ROW 2: Wind ──
-  const windRow = widget.addStack();
+  const windStyle = getWindStyle(parseFloat(windKnots));
+  const windRow = content.addStack();
   windRow.layoutHorizontally();
   windRow.centerAlignContent();
-  windRow.spacing = 5;
+  windRow.spacing = s(5);
 
   const arrowText = windRow.addText(windArrow);
-  arrowText.font = Font.boldSystemFont(20);
-  arrowText.textColor = new Color("#7ec8e3");
+  arrowText.font = Font.boldSystemFont(s(20));
+  arrowText.textColor = new Color(windStyle.color);
 
-  const windLabel = windRow.addText(windCompass + "  " + windKnots + " kn");
-  windLabel.font = Font.semiboldMonospacedSystemFont(14);
-  windLabel.textColor = new Color("#e8f4f8");
+  const windLabelContainer = windRow.addStack();
+  if (windStyle.bg) {
+    windLabelContainer.backgroundColor = new Color(windStyle.bg);
+    windLabelContainer.cornerRadius = s(4);
+    windLabelContainer.setPadding(s(1), s(4), s(1), s(4));
+  }
+  const windLabel = windLabelContainer.addText(windCompass + "  " + windKnots + " kn");
+  windLabel.font = Font.semiboldMonospacedSystemFont(s(14));
+  windLabel.textColor = new Color(windStyle.color);
   windLabel.lineLimit = 1;
 
-  widget.addSpacer(4);
+  content.addSpacer(s(4));
 
   // ── DIVIDER ──
-  const divStack = widget.addStack();
+  const divStack = content.addStack();
   divStack.backgroundColor = new Color("#1e3a5f");
   divStack.size = new Size(0, 1);
 
-  widget.addSpacer(4);
+  content.addSpacer(s(4));
 
   // ── ROW 3: Moon (left) + Sun times (right) ──
-  const bottomRow = widget.addStack();
+  const bottomRow = content.addStack();
   bottomRow.layoutHorizontally();
   bottomRow.centerAlignContent();
 
@@ -223,14 +294,14 @@ async function buildWidget() {
   const moonStack = bottomRow.addStack();
   moonStack.layoutVertically();
   moonStack.centerAlignContent();
-  moonStack.spacing = 2;
+  moonStack.spacing = s(2);
 
   const moonIconText = moonStack.addText(moonIcon);
-  moonIconText.font = Font.systemFont(22);
+  moonIconText.font = Font.systemFont(s(22));
   moonIconText.centerAlignText();
 
   const moonNameText = moonStack.addText(moonName);
-  moonNameText.font = Font.semiboldSystemFont(10);
+  moonNameText.font = Font.semiboldSystemFont(s(10));
   moonNameText.textColor = new Color("#c8dff0");
   moonNameText.centerAlignText();
   moonNameText.minimumScaleFactor = 0.7;
@@ -240,27 +311,27 @@ async function buildWidget() {
   // Sun times
   const sunStack = bottomRow.addStack();
   sunStack.layoutVertically();
-  sunStack.spacing = 4;
+  sunStack.spacing = s(4);
 
   const srRow = sunStack.addStack();
   srRow.layoutHorizontally();
-  srRow.spacing = 5;
+  srRow.spacing = s(5);
   srRow.centerAlignContent();
   const srIcon = srRow.addText("🌅");
-  srIcon.font = Font.systemFont(13);
+  srIcon.font = Font.systemFont(s(13));
   const srText = srRow.addText(sun.sunrise);
-  srText.font = Font.semiboldMonospacedSystemFont(12);
+  srText.font = Font.semiboldMonospacedSystemFont(s(12));
   srText.textColor = new Color("#e8c66d");
   srText.minimumScaleFactor = 0.8;
 
   const ssRow = sunStack.addStack();
   ssRow.layoutHorizontally();
-  ssRow.spacing = 5;
+  ssRow.spacing = s(5);
   ssRow.centerAlignContent();
   const ssIcon = ssRow.addText("🌇");
-  ssIcon.font = Font.systemFont(13);
+  ssIcon.font = Font.systemFont(s(13));
   const ssText = ssRow.addText(sun.sunset);
-  ssText.font = Font.semiboldMonospacedSystemFont(12);
+  ssText.font = Font.semiboldMonospacedSystemFont(s(12));
   ssText.textColor = new Color("#e8a54a");
   ssText.minimumScaleFactor = 0.8;
 
