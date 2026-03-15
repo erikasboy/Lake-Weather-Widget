@@ -167,7 +167,7 @@ async function buildWidget() {
   topRow.bottomAlignContent();
 
   const tempText = topRow.addText(tempC + "°");
-  tempText.font = Font.boldSystemFont(60);
+  tempText.font = Font.boldSystemFont(54);
   tempText.textColor = new Color("#e8f4f8");
   tempText.minimumScaleFactor = 0.8;
 
@@ -203,6 +203,7 @@ async function buildWidget() {
   const windLabel = windRow.addText(windCompass + "  " + windKnots + " kn");
   windLabel.font = Font.semiboldMonospacedSystemFont(16);
   windLabel.textColor = new Color("#e8f4f8");
+  windLabel.lineLimit = 1;
 
   widget.addSpacer(4);
 
