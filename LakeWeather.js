@@ -156,10 +156,13 @@ async function buildWidget() {
   const moonName = moonPhaseName(phase);
   const sun = getSunTimes(now, lat, lon);
 
+  // ── SCALE: baseline tuned for iPhone SE 2 (375pt wide) ──────────
+  const s = n => Math.round(n * Device.screenSize().width / 375);
+
   // ── WIDGET ────────────────────────────────────────────────────
   const widget = new ListWidget();
   widget.backgroundColor = new Color("#0f1b2d");
-  widget.setPadding(10, 14, 6, 14);
+  widget.setPadding(s(10), s(14), s(6), s(14));
 
   // ── ROW 1: Temp (large, left) + Condition emoji + label (right) ──
   const topRow = widget.addStack();
@@ -167,7 +170,7 @@ async function buildWidget() {
   topRow.bottomAlignContent();
 
   const tempText = topRow.addText(tempC + "°");
-  tempText.font = Font.boldSystemFont(54);
+  tempText.font = Font.boldSystemFont(s(54));
   tempText.textColor = new Color("#e8f4f8");
   tempText.minimumScaleFactor = 0.8;
 
@@ -177,42 +180,42 @@ async function buildWidget() {
   condStack.layoutVertically();
 
   const condEmojiText = condStack.addText(condEmoji);
-  condEmojiText.font = Font.systemFont(32);
+  condEmojiText.font = Font.systemFont(s(32));
   condEmojiText.rightAlignText();
 
-  condStack.addSpacer(2);
+  condStack.addSpacer(s(2));
 
   const condLabel = condStack.addText(condition);
-  condLabel.font = Font.mediumSystemFont(13);
+  condLabel.font = Font.mediumSystemFont(s(13));
   condLabel.textColor = new Color("#7ec8e3");
   condLabel.rightAlignText();
   condLabel.minimumScaleFactor = 0.7;
 
-  widget.addSpacer(2);
+  widget.addSpacer(s(2));
 
   // ── ROW 2: Wind ──
   const windRow = widget.addStack();
   windRow.layoutHorizontally();
   windRow.centerAlignContent();
-  windRow.spacing = 5;
+  windRow.spacing = s(5);
 
   const arrowText = windRow.addText(windArrow);
-  arrowText.font = Font.boldSystemFont(20);
+  arrowText.font = Font.boldSystemFont(s(20));
   arrowText.textColor = new Color("#7ec8e3");
 
   const windLabel = windRow.addText(windCompass + "  " + windKnots + " kn");
-  windLabel.font = Font.semiboldMonospacedSystemFont(14);
+  windLabel.font = Font.semiboldMonospacedSystemFont(s(14));
   windLabel.textColor = new Color("#e8f4f8");
   windLabel.lineLimit = 1;
 
-  widget.addSpacer(4);
+  widget.addSpacer(s(4));
 
   // ── DIVIDER ──
   const divStack = widget.addStack();
   divStack.backgroundColor = new Color("#1e3a5f");
   divStack.size = new Size(0, 1);
 
-  widget.addSpacer(4);
+  widget.addSpacer(s(4));
 
   // ── ROW 3: Moon (left) + Sun times (right) ──
   const bottomRow = widget.addStack();
@@ -223,14 +226,14 @@ async function buildWidget() {
   const moonStack = bottomRow.addStack();
   moonStack.layoutVertically();
   moonStack.centerAlignContent();
-  moonStack.spacing = 2;
+  moonStack.spacing = s(2);
 
   const moonIconText = moonStack.addText(moonIcon);
-  moonIconText.font = Font.systemFont(22);
+  moonIconText.font = Font.systemFont(s(22));
   moonIconText.centerAlignText();
 
   const moonNameText = moonStack.addText(moonName);
-  moonNameText.font = Font.semiboldSystemFont(10);
+  moonNameText.font = Font.semiboldSystemFont(s(10));
   moonNameText.textColor = new Color("#c8dff0");
   moonNameText.centerAlignText();
   moonNameText.minimumScaleFactor = 0.7;
@@ -240,27 +243,27 @@ async function buildWidget() {
   // Sun times
   const sunStack = bottomRow.addStack();
   sunStack.layoutVertically();
-  sunStack.spacing = 4;
+  sunStack.spacing = s(4);
 
   const srRow = sunStack.addStack();
   srRow.layoutHorizontally();
-  srRow.spacing = 5;
+  srRow.spacing = s(5);
   srRow.centerAlignContent();
   const srIcon = srRow.addText("🌅");
-  srIcon.font = Font.systemFont(13);
+  srIcon.font = Font.systemFont(s(13));
   const srText = srRow.addText(sun.sunrise);
-  srText.font = Font.semiboldMonospacedSystemFont(12);
+  srText.font = Font.semiboldMonospacedSystemFont(s(12));
   srText.textColor = new Color("#e8c66d");
   srText.minimumScaleFactor = 0.8;
 
   const ssRow = sunStack.addStack();
   ssRow.layoutHorizontally();
-  ssRow.spacing = 5;
+  ssRow.spacing = s(5);
   ssRow.centerAlignContent();
   const ssIcon = ssRow.addText("🌇");
-  ssIcon.font = Font.systemFont(13);
+  ssIcon.font = Font.systemFont(s(13));
   const ssText = ssRow.addText(sun.sunset);
-  ssText.font = Font.semiboldMonospacedSystemFont(12);
+  ssText.font = Font.semiboldMonospacedSystemFont(s(12));
   ssText.textColor = new Color("#e8a54a");
   ssText.minimumScaleFactor = 0.8;
 
