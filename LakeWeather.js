@@ -243,10 +243,12 @@ async function buildWidget() {
     tempContainer.cornerRadius = s(6);
     tempContainer.setPadding(s(2), s(4), s(2), s(4));
   }
-  const tempText = tempContainer.addText(tempC + "°");
-  tempText.font = Font.boldSystemFont(s(54));
+  const tempStr = tempC + "°";
+  const tempFontSize = tempStr.length <= 2 ? s(54) : tempStr.length === 3 ? s(46) : s(38);
+  const tempText = tempContainer.addText(tempStr);
+  tempText.font = Font.boldSystemFont(tempFontSize);
   tempText.textColor = new Color(tempStyle.color);
-  tempText.minimumScaleFactor = 0.8;
+  tempText.minimumScaleFactor = 0.75;
 
   topRow.addSpacer();
 
