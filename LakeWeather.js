@@ -10,7 +10,14 @@ let WEATHERAPI_KEY = "";
 if (Keychain.contains("lakeweather_weatherapi_key")) {
   WEATHERAPI_KEY = Keychain.get("lakeweather_weatherapi_key");
 } else if (!config.runsInWidget) {
-  const key = await input("WeatherAPI Key", "Paste your WeatherAPI.com key", "");
+  const alert = new Alert();
+  alert.title = "WeatherAPI Key";
+  alert.message = "Paste your WeatherAPI.com key";
+  alert.addTextField("API Key", "");
+  alert.addAction("Save");
+  alert.addCancelAction("Cancel");
+  const idx = await alert.presentAlert();
+  const key = idx === 0 ? alert.textFieldValue(0) : "";
   if (key) {
     Keychain.set("lakeweather_weatherapi_key", key);
     WEATHERAPI_KEY = key;
