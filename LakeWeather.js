@@ -1,28 +1,6 @@
 // LakeWeather Widget for Scriptable
 // Medium widget: Temp, Condition, Wind (knots + direction arrow), Moon, Sunrise/Sunset
-// Data: Open-Meteo (weather), WeatherAPI.com (alerts)
-
-// ── API KEY SETUP ────────────────────────────────────────────────
-// Run this script once inside the Scriptable app to be prompted for
-// your WeatherAPI.com key. It is stored in the iOS Keychain and
-// never needs to be pasted into this file.
-let WEATHERAPI_KEY = "";
-if (Keychain.contains("lakeweather_weatherapi_key")) {
-  WEATHERAPI_KEY = Keychain.get("lakeweather_weatherapi_key");
-} else if (!config.runsInWidget) {
-  const alert = new Alert();
-  alert.title = "WeatherAPI Key";
-  alert.message = "Paste your WeatherAPI.com key";
-  alert.addTextField("API Key", "");
-  alert.addAction("Save");
-  alert.addCancelAction("Cancel");
-  const idx = await alert.presentAlert();
-  const key = idx === 0 ? alert.textFieldValue(0) : "";
-  if (key) {
-    Keychain.set("lakeweather_weatherapi_key", key);
-    WEATHERAPI_KEY = key;
-  }
-}
+// Data: Open-Meteo (weather), Environment Canada GeoMet (alerts — no API key needed)
 
 // ── HELPERS: WIND ───────────────────────────────────────────────
 function kmhToKnots(kmh) {
@@ -162,27 +140,37 @@ function getTempStyle(temp) {
 
 // ── FETCH WEATHER ────────────────────────────────────────────────
 async function fetchWeather(lat, lon) {
-  const url = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon + "&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh&temperature_unit=celsius&timezone=auto";
-  const req = new Request(url);
-  const json = await req.loadJSON();
-  return json.current;
-}
-
-// ── FETCH ALERTS ─────────────────────────────────────────────────
-async function fetchAlerts(lat, lon, apiKey) {
   try {
-    const url = "https://api.weatherapi.com/v1/forecast.json?key=" + apiKey + "&q=" + lat + "," + lon + "&days=1&alerts=yes";
+    const url = "https://api.open-meteo.com/v1/forecast?latitude=" + lat + "&longitude=" + lon + "&current=temperature_2m,weather_code,wind_speed_10m,wind_direction_10m&wind_speed_unit=kmh&temperature_unit=celsius&timezone=auto";
     const req = new Request(url);
     const json = await req.loadJSON();
-    const alerts = json.alerts && json.alerts.alert;
-    if (!alerts || alerts.length === 0) return { level: "none", url: null };
+    return json.current || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+// ── FETCH ALERTS (Environment Canada GeoMet — no API key needed) ──
+// Uses a ~10 km bounding box around your location. EC issues alerts
+// as geographic polygons, so you only see warnings active in your
+// exact area — not the broader YYZ/Pearson station region.
+async function fetchAlerts(lat, lon) {
+  try {
+    const d = 0.1; // ~10 km
+    const bbox = (lon - d).toFixed(4) + "," + (lat - d).toFixed(4) + ","
+               + (lon + d).toFixed(4) + "," + (lat + d).toFixed(4);
+    const url = "https://geo.weather.gc.ca/geomet/features/collections/alerts/items?f=json&limit=50&bbox=" + bbox;
+    const req = new Request(url);
+    const json = await req.loadJSON();
+    if (!json.features || json.features.length === 0) return { level: "none", url: null };
     const rank = { "none": 0, "yellow": 1, "orange": 2, "red": 3 };
     const severityMap = { "Minor": "yellow", "Moderate": "orange", "Severe": "red", "Extreme": "red" };
     let worst = { level: "none", url: null };
-    for (const alert of alerts) {
-      const level = severityMap[alert.severity] || "none";
+    for (const feature of json.features) {
+      const props = feature.properties || {};
+      const level = severityMap[props.severity] || "none";
       if (rank[level] > rank[worst.level]) {
-        worst = { level, url: alert.url || null };
+        worst = { level, url: "https://weather.gc.ca/warnings/index_e.html?prov=on" };
       }
     }
     return worst;
@@ -205,14 +193,15 @@ async function buildWidget() {
   const lon = loc.longitude;
 
   const weather = await fetchWeather(lat, lon);
-  const alertInfo = await fetchAlerts(lat, lon, WEATHERAPI_KEY);
-  const tempC = Math.round(weather.temperature_2m);
-  const tempStyle = getTempStyle(tempC);
-  const windKnots = kmhToKnots(weather.wind_speed_10m);
-  const windCompass = degreesToCompass(weather.wind_direction_10m);
-  const windArrow = compassToArrow(weather.wind_direction_10m);
-  const condition = weatherDescription(weather.weather_code);
-  const condEmoji = weatherEmoji(weather.weather_code);
+  const alertInfo = await fetchAlerts(lat, lon);
+
+  const tempC = weather && weather.temperature_2m != null ? Math.round(weather.temperature_2m) : null;
+  const tempStyle = getTempStyle(tempC != null ? tempC : 0);
+  const windKnots = weather ? kmhToKnots(weather.wind_speed_10m) : "—";
+  const windCompass = weather ? degreesToCompass(weather.wind_direction_10m) : "—";
+  const windArrow = weather ? compassToArrow(weather.wind_direction_10m) : "·";
+  const condition = weather ? weatherDescription(weather.weather_code) : "—";
+  const condEmoji = weather ? weatherEmoji(weather.weather_code) : "—";
 
   const now = new Date();
   const phase = getMoonPhase(now);
@@ -250,7 +239,7 @@ async function buildWidget() {
     tempContainer.cornerRadius = s(6);
     tempContainer.setPadding(s(2), s(4), s(2), s(4));
   }
-  const tempStr = tempC + "°";
+  const tempStr = tempC != null && !isNaN(tempC) ? tempC + "°" : "—°";
   const tempFontSize = tempStr.length <= 2 ? s(54) : tempStr.length === 3 ? s(46) : s(38);
   const tempText = tempContainer.addText(tempStr);
   tempText.font = Font.boldSystemFont(tempFontSize);
