@@ -240,7 +240,7 @@ async function buildWidget() {
     tempContainer.setPadding(s(2), s(4), s(2), s(4));
   }
   const tempStr = tempC != null && !isNaN(tempC) ? tempC + "°" : "—°";
-  const tempFontSize = tempStr.length <= 2 ? s(54) : tempStr.length === 3 ? s(46) : s(38);
+  const tempFontSize = tempStr.length <= 2 ? s(54) : tempStr.length === 3 ? s(46) : s(30);
   const tempText = tempContainer.addText(tempStr);
   tempText.font = Font.boldSystemFont(tempFontSize);
   tempText.textColor = new Color(tempStyle.color);
